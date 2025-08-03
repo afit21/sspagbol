@@ -3,7 +3,7 @@ use reqwest::blocking::Client;
 use std::time::Duration;
 use url::Url;
 
-//Attempts to ping a service
+//Attempts to ping a service. Returns true or false
 pub fn ping(target: &str) -> bool {
     //Windows Implementation
     let output = if cfg!(target_os = "windows") {
@@ -23,6 +23,7 @@ pub fn ping(target: &str) -> bool {
     }
 }
 
+//Checks for HTTP response. Returns true or false
 pub fn web_server_up(base_url: &str, port: u16) -> bool {
     // Parse and override the port in the URL
     let mut url = match Url::parse(base_url) {

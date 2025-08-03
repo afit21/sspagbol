@@ -11,6 +11,13 @@ pub struct ConfigItem {
     pub ciname: String,
     pub citype: String, //Defines the type of Config Item that this is
     pub cidata: Vec<String> //Undefined data strings
+
+    //CI Data:
+    //Hostmachine
+    //  [0] - IP address
+    //Webserver
+    //  [0] - URL
+    //  [1] - Port
 }
 
 #[derive(Debug, Clone)]

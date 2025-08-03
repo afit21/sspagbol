@@ -1,7 +1,9 @@
 // Maintained by Afi Hogan https://github.com/afit21
+//RUSTFLAGS="-Awarnings" cargo run
 mod services;
 use services::{ConfigItem, Service};
 
+//Splash title
 fn print_splash() {
     let banner = r#"
    _____ _____ _____        _____ ____   ____  _      
@@ -16,6 +18,15 @@ fn print_splash() {
 }
 
 fn main() {
+    test_code();
+}
+
+fn load_from_file(){
+    //TODO: Implement
+} 
+
+//Code for testing until YAML file feature is added
+fn test_code() {
     print_splash();
     let ci = ConfigItem {
         ciname: "Nginx Host VM".to_string(),
