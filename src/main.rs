@@ -1,7 +1,7 @@
 // Maintained by Afi Hogan https://github.com/afit21
 //RUSTFLAGS="-Awarnings" cargo run
 mod services;
-use services::{load_services_from_yaml};
+use services::{load_services_from_yaml, print_all_services_in_parallel};
 
 //Splash title
 fn print_splash() {
@@ -18,7 +18,7 @@ fn print_splash() {
 }
 
 fn main() {
-print_splash();
+    print_splash();
 
     let services = match load_services_from_yaml("config/services.yaml") {
         Ok(srv) => srv,
@@ -28,7 +28,5 @@ print_splash();
         }
     };
 
-    for service in services {
-        service.print_srv_status();
-    }
+    print_all_services_in_parallel(&services);
 }

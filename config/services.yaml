@@ -1,16 +1,16 @@
 - name: PiHole
   desc: DNS and ad-blocking service
   cilist:
-    - ciname: PiHole Web GUI
-      citype: Webserver
-      cidata:
-        - "https://pihole.afih.net/admin/login"
-        - "443"
     - ciname: SSH Connection
       citype: SSHServer
       cidata:
         - "192.168.50.74"
         - "22"
+    - ciname: PiHole Web GUI
+      citype: Webserver
+      cidata:
+        - "https://pihole.afih.net/admin/login"
+        - "443"
 
 - name: Deluge
   desc: Torrent client
@@ -29,6 +29,10 @@
       cidata:
         - "https://homeassistant.afih.net/"
         - "443"
+    - ciname: Home Assistant Hostmachine
+      citype: Hostmachine
+      cidata:
+        - "homeassistant.afih.net"
 
 - name: Radarr
   desc: Movie management tool
