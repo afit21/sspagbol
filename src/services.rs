@@ -3,10 +3,12 @@ mod netutils;
 use ansi_term::Style;
 use indicatif::{ProgressBar, ProgressStyle};
 use std::{thread, time::Duration};
-
+use serde::Deserialize;
 use netutils::{ping, web_server_up};
+use std::fs::File;
+use std::io::BufReader;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct ConfigItem {
     pub ciname: String,
     pub citype: String, //Defines the type of Config Item that this is
@@ -20,7 +22,7 @@ pub struct ConfigItem {
     //  [1] - Port
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct Service {
     pub name: String,
     pub desc: String,
@@ -28,15 +30,25 @@ pub struct Service {
 }
 
 impl ConfigItem {
+    //Prints the status of a Config Item
     pub fn print_status(self) {
         let ciclone = self.clone();
         let handle = match self.citype.as_str() {
             "Hostmachine" => print_hostmachine_status(ciclone),
             "Webserver" => print_webserver_status(ciclone),
             _ => print_hostmachine_status(ciclone),
-    };
+        };
 
-    handle.join().expect("Thread panicked");
+        handle.join().expect("Thread panicked");
+    }
+
+    //Verifies a CI's data is valid
+    pub fn verify_valid_data(&self) -> bool {
+        match self.citype.as_str() {
+            "Hostmachine" => return verify_hostmachine_data(self),
+            "Webserver" => return verify_webserver_data(self),
+            _ =>  return verify_hostmachine_data(self),
+        };
     }
 }
 
@@ -45,9 +57,30 @@ impl Service {
         let serviceclone = self.clone();
         print_service_status_header(serviceclone.name, serviceclone.desc);
         for ci in serviceclone.cilist {
-            ci.print_status();
+            if ci.verify_valid_data() {
+                ci.print_status();
+            } else {
+                print!("Invalid data for Configuration Item {}", ci.ciname)
+            }
         }
     }
+}
+
+pub fn load_services_from_yaml(path: &str) -> Result<Vec<Service>, Box<dyn std::error::Error>> {
+    let file = File::open(path)?;
+    let reader = BufReader::new(file);
+    let services: Vec<Service> = serde_yaml::from_reader(reader)?;
+    Ok(services)
+}
+
+fn verify_hostmachine_data(ci: &ConfigItem) -> bool {
+    //TODO: Implement this
+    return true;
+}
+
+fn verify_webserver_data(ci: &ConfigItem) -> bool {
+    //TODO: Implement this
+    return true;
 }
 
 //Spinner for loading

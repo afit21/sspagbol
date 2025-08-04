@@ -1,0 +1,21 @@
+- name: WebApp
+  desc: A simple web service
+  cilist:
+    - ciname: webserver1
+      citype: Webserver
+      cidata:
+        - "https://example.com"
+        - "443"
+    - ciname: host1
+      citype: Hostmachine
+      cidata:
+        - "192.168.1.10"
+
+- name: API
+  desc: Backend API service
+  cilist:
+    - ciname: webserver2
+      citype: Webserver
+      cidata:
+        - "https://api.example.com"
+        - "8443"

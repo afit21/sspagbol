@@ -1,7 +1,7 @@
 // Maintained by Afi Hogan https://github.com/afit21
 //RUSTFLAGS="-Awarnings" cargo run
 mod services;
-use services::{ConfigItem, Service};
+use services::{load_services_from_yaml};
 
 //Splash title
 fn print_splash() {
@@ -18,47 +18,17 @@ fn print_splash() {
 }
 
 fn main() {
-    test_code();
-}
+print_splash();
 
-fn load_from_file(){
-    //TODO: Implement
-} 
-
-//Code for testing until YAML file feature is added
-fn test_code() {
-    print_splash();
-    let ci = ConfigItem {
-        ciname: "Nginx Host VM".to_string(),
-        citype: "Hostmachine".to_string(),
-        cidata: vec![
-            "192.168.50.79".to_string()
-        ]
+    let services = match load_services_from_yaml("config/services.yaml") {
+        Ok(srv) => srv,
+        Err(e) => {
+            eprintln!("Error loading services: {}", e);
+            return;
+        }
     };
 
-    let webci = ConfigItem {
-        ciname: "Nginx Proxy Manager".to_string(),
-        citype: "Webserver".to_string(),
-        cidata: vec![
-            "https://npm.afih.net/".to_string(),
-            "443".to_string()
-        ]
-    };
-
-    let fakewebci = ConfigItem {
-        ciname: "Fake Web Server".to_string(),
-        citype: "Webserver".to_string(),
-        cidata: vec![
-            "https://npmasdada.afih.net/".to_string(),
-            "443".to_string()
-        ]
-    };
-
-    let service = Service {
-        name: "Nginx Proxy Manager".to_string(),
-        desc: "Proxy server for web servers".to_string(),
-        cilist: vec![ci, webci, fakewebci],
-    };
-
-    service.print_srv_status();
+    for service in services {
+        service.print_srv_status();
+    }
 }
