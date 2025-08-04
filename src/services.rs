@@ -117,11 +117,15 @@ fn print_ci_status_header(ciname: String, text: String) {
 
 //Prints the header lines when printing a Service Status
 fn print_service_status_header(svcname: String, text: String) {
-    println!("#");
-    println!(
-        "{}",
-        Style::new().bold().paint(format!("{} - {}", svcname, text))
-    );
+    let content = format!("{} - {}", svcname, text);
+    let styled_content = Style::new().bold().paint(&content).to_string();
+    let width = content.chars().count();
+    let horizontal_border = format!("+{}+", "-".repeat(width + 2));
+
+    println!(" ");
+    println!("{}", horizontal_border);
+    println!("| {} |", styled_content);
+    println!("{}", horizontal_border);
 }
 
 //Appends emoji depending on bool

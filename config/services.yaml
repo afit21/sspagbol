@@ -1,21 +1,17 @@
-- name: WebApp
-  desc: A simple web service
+- name: PiHole
+  desc: DNS and ad-blocking service
   cilist:
-    - ciname: webserver1
+    - ciname: PiHole Web GUI
       citype: Webserver
       cidata:
-        - "https://example.com"
+        - "https://pihole.afih.net/admin/login"
         - "443"
-    - ciname: host1
-      citype: Hostmachine
-      cidata:
-        - "192.168.1.10"
 
-- name: API
-  desc: Backend API service
+- name: Deluge
+  desc: Torrent client
   cilist:
-    - ciname: webserver2
+    - ciname: Deluge Web UI
       citype: Webserver
       cidata:
-        - "https://api.example.com"
-        - "8443"
+        - "https://deluge.afih.net/"
+        - "443"
