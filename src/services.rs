@@ -4,7 +4,7 @@ use ansi_term::Style;
 use indicatif::{ProgressBar, ProgressStyle};
 use std::{thread, time::Duration};
 use serde::Deserialize;
-use netutils::{ping, web_server_up};
+use netutils::{ping, web_server_up, ssh_server_up};
 use std::fs::File;
 use std::io::BufReader;
 
@@ -19,6 +19,9 @@ pub struct ConfigItem {
     //  [0] - IP address
     //Webserver
     //  [0] - URL
+    //  [1] - Port
+    //SSH Server
+    //  [0] - IP Address or Hostname
     //  [1] - Port
 }
 
@@ -36,6 +39,7 @@ impl ConfigItem {
         let handle = match self.citype.as_str() {
             "Hostmachine" => print_hostmachine_status(ciclone),
             "Webserver" => print_webserver_status(ciclone),
+            "SSHServer" => print_sshserver_status(ciclone),
             _ => print_hostmachine_status(ciclone),
         };
 
@@ -47,6 +51,7 @@ impl ConfigItem {
         match self.citype.as_str() {
             "Hostmachine" => return verify_hostmachine_data(self),
             "Webserver" => return verify_webserver_data(self),
+            "SSHServer" => return verify_hostmachine_data(self), //TODO: Implement SSH Server verification
             _ =>  return verify_hostmachine_data(self),
         };
     }
@@ -66,6 +71,7 @@ impl Service {
     }
 }
 
+//Loads services from a YAML file & Returns a vector of Service structs
 pub fn load_services_from_yaml(path: &str) -> Result<Vec<Service>, Box<dyn std::error::Error>> {
     let file = File::open(path)?;
     let reader = BufReader::new(file);
@@ -97,7 +103,7 @@ fn create_spinner(label: &str) -> ProgressBar {
     pb
 }
 
-//
+//Spinner wait code
 fn run_status_check<F>(label: &str, task: F) -> thread::JoinHandle<()> where F: FnOnce() -> String + Send + 'static, {
     let pb = create_spinner(label.to_string().as_str());
 
@@ -153,5 +159,18 @@ fn print_webserver_status(config: ConfigItem) -> thread::JoinHandle<()> {
         //TODO: add error handling for above
         let addr = config.cidata[0].as_str();
         print_bool_result_emoji("Web Server Up", web_server_up(addr, port))
+    })
+}
+
+//Print SSH Server Status
+fn print_sshserver_status(config: ConfigItem) -> thread::JoinHandle<()> {
+    print_ci_status_header(config.ciname, "SSH Server".to_string());
+
+    run_status_check("", move || {
+        //Status results
+        let port : u16 = config.cidata[1].parse().expect("Invalid number");
+        //TODO: add error handling for above
+        let addr = config.cidata[0].as_str();
+        format!("SSH Server Up: {}", ssh_server_up(addr, port))
     })
 }
