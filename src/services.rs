@@ -103,7 +103,7 @@ impl Service {
 }
 
 //Will print all services in parallel
-pub fn print_all_services_in_parallel(services: &[Service]) {
+pub fn collect_all_services_in_parallel(services: &[Service]) -> String {
     let results: Vec<Mutex<Option<Vec<String>>>> =
         (0..services.len()).map(|_| Mutex::new(None)).collect();
 
@@ -118,14 +118,19 @@ pub fn print_all_services_in_parallel(services: &[Service]) {
         }
     }).unwrap();
 
-    // Now print results in order
+    // Build final output string
+    let mut output = String::new();
+
     for slot in results.iter() {
         if let Some(lines) = slot.lock().unwrap().as_ref() {
             for line in lines {
-                println!("{}", line);
+                output.push_str(line);
+                output.push('\n');
             }
         }
     }
+
+    output
 }
 
 //Loads services from a YAML file & Returns a vector of Service structs

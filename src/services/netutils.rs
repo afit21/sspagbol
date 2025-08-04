@@ -72,7 +72,7 @@ pub fn ssh_server_up(host: &str, port: u16) -> String {
             let banner = String::from_utf8_lossy(&buffer[..size]);
             
             if banner.starts_with("SSH-") {
-                return format!("✅ - {}", banner.to_string().trim_end_matches(&['\r', '\n'][..]).len());
+                return format!("✅ - {}", banner.to_string().trim_end_matches(&['\r', '\n'][..]));
             } else {
                 return "❌".to_string();
             }
