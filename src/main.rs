@@ -26,7 +26,7 @@ fn start_spinner(message: &str) -> (Arc<AtomicBool>, thread::JoinHandle<()>) {
     let msg = message.to_string();
 
     let handle = thread::spawn(move || {
-        let spinner_chars = ['|', '/', '-', '\\'];
+        let spinner_chars = ['⠋', '⠙', '⠚', '⠞', '⠖', '⠦', '⠴', '⠲', '⠳', '⠓'];
         let mut i = 0;
         while spinner_running.load(Ordering::SeqCst) {
             print!("\r{} {}", msg, spinner_chars[i % spinner_chars.len()]);
@@ -56,7 +56,7 @@ fn main() {
     };
 
     // Start spinner
-    let (spinner_flag, spinner_handle) = start_spinner("Checking services...");
+    let (spinner_flag, spinner_handle) = start_spinner("Running Status Checks...");
 
     // This is where the magic happens
     let output = collect_all_services_in_parallel(&services);
