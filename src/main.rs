@@ -1,9 +1,11 @@
-// Maintained by Afi Hogan https://github.com/afit21
-//RUSTFLAGS="-Awarnings" cargo run
 mod services;
-use services::{ConfigItem, Service};
+use services::{load_services_from_yaml, collect_all_services_in_parallel};
+use std::sync::{Arc, atomic::{AtomicBool, Ordering}};
+use std::thread;
+use std::time::Duration;
+use std::io::{self, Write};
 
-//Splash title
+// Splash title
 fn print_splash() {
     let banner = r#"
    _____ _____ _____        _____ ____   ____  _      
@@ -17,48 +19,52 @@ fn print_splash() {
     println!("{}", banner);
 }
 
-fn main() {
-    test_code();
+// Spinner function
+fn start_spinner(message: &str) -> (Arc<AtomicBool>, thread::JoinHandle<()>) {
+    let running = Arc::new(AtomicBool::new(true));
+    let spinner_running = Arc::clone(&running);
+    let msg = message.to_string();
+
+    let handle = thread::spawn(move || {
+        let spinner_chars = ['⠋', '⠙', '⠚', '⠞', '⠖', '⠦', '⠴', '⠲', '⠳', '⠓'];
+        let mut i = 0;
+        while spinner_running.load(Ordering::SeqCst) {
+            print!("\r{} {}", msg, spinner_chars[i % spinner_chars.len()]);
+            io::stdout().flush().unwrap();
+            thread::sleep(Duration::from_millis(100));
+            i += 1;
+        }
+
+        // Clear spinner line
+        let clear_line = " ".repeat(msg.len() + 2);
+        print!("\r{}\r", clear_line); // overwrite and return carriage
+        io::stdout().flush().unwrap();
+    });
+
+    (running, handle)
 }
 
-fn load_from_file(){
-    //TODO: Implement
-} 
-
-//Code for testing until YAML file feature is added
-fn test_code() {
+fn main() {
     print_splash();
-    let ci = ConfigItem {
-        ciname: "Nginx Host VM".to_string(),
-        citype: "Hostmachine".to_string(),
-        cidata: vec![
-            "192.168.50.79".to_string()
-        ]
+
+    let services = match load_services_from_yaml("config/services.yaml") {
+        Ok(srv) => srv,
+        Err(e) => {
+            eprintln!("Error loading services: {}", e);
+            return;
+        }
     };
 
-    let webci = ConfigItem {
-        ciname: "Nginx Proxy Manager".to_string(),
-        citype: "Webserver".to_string(),
-        cidata: vec![
-            "https://npm.afih.net/".to_string(),
-            "443".to_string()
-        ]
-    };
+    // Start spinner
+    let (spinner_flag, spinner_handle) = start_spinner("Running Status Checks...");
 
-    let fakewebci = ConfigItem {
-        ciname: "Fake Web Server".to_string(),
-        citype: "Webserver".to_string(),
-        cidata: vec![
-            "https://npmasdada.afih.net/".to_string(),
-            "443".to_string()
-        ]
-    };
+    // This is where the magic happens
+    let output = collect_all_services_in_parallel(&services);
 
-    let service = Service {
-        name: "Nginx Proxy Manager".to_string(),
-        desc: "Proxy server for web servers".to_string(),
-        cilist: vec![ci, webci, fakewebci],
-    };
+    // Stop spinner
+    spinner_flag.store(false, Ordering::SeqCst);
+    spinner_handle.join().unwrap();
 
-    service.print_srv_status();
+    // Print final output
+    println!("{}", output);
 }

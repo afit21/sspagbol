@@ -2,6 +2,8 @@ use std::process::Command;
 use reqwest::blocking::Client;
 use std::time::Duration;
 use url::Url;
+use std::net::{TcpStream};
+use std::io::{Read};
 
 //Attempts to ping a service. Returns true or false
 pub fn ping(target: &str) -> bool {
@@ -45,5 +47,36 @@ pub fn web_server_up(base_url: &str, port: u16) -> bool {
     match client.get(url).send() {
         Ok(resp) => resp.status().is_success(),
         Err(_) => false,
+    }
+}
+
+pub fn ssh_server_up(host: &str, port: u16) -> String {
+    let address = format!("{host}:{port}");
+    // Attempt to connect with a timeout
+    let Ok(mut stream) = TcpStream::connect_timeout(
+        &address.parse().unwrap(),
+        Duration::from_secs(3),
+    ) else {
+        return "❌".to_string();
+    };
+
+    // Set a read timeout for the banner
+    if stream.set_read_timeout(Some(Duration::from_secs(2))).is_err() {
+        return "❌".to_string();
+    }
+
+    // Read the server's banner (first message)
+    let mut buffer = [0u8; 256];
+    match stream.read(&mut buffer) {
+        Ok(size) if size > 0 => {
+            let banner = String::from_utf8_lossy(&buffer[..size]);
+            
+            if banner.starts_with("SSH-") {
+                return format!("✅ - {}", banner.to_string().trim_end_matches(&['\r', '\n'][..]));
+            } else {
+                return "❌".to_string();
+            }
+        }
+        _ => "❌".to_string(),
     }
 }
