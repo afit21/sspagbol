@@ -2,7 +2,7 @@ mod netutils;
 
 use ansi_term::Style;
 use serde::Deserialize;
-use netutils::{ping, web_server_up, ssh_server_up};
+use netutils::{ping, web_server_up, ssh_server_up, dns_server_up};
 use std::fs::File;
 use std::io::BufReader;
 use crossbeam_channel::unbounded;
@@ -23,6 +23,8 @@ pub struct ConfigItem {
     //SSH Server
     //  [0] - IP Address or Hostname
     //  [1] - Port
+    //DNS Server
+    //  [0] - IP Address
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -66,11 +68,16 @@ impl Service {
                 let sender = sender.clone();
                 let ci = ci.clone();
                 s.spawn(move |_| {
+                    //TODO: Add support for the following services:
+                    //SMB
+                    //FTP
+                    //SMTP
                     let result = match ci.citype.as_str() {
                         //Register Type Print Functions
                         "Hostmachine" => hostmachine_status(ci),
                         "Webserver" => webserver_status(ci),
                         "SSHServer" => ssh_status(ci),
+                        "DNSServer" => dns_status(ci),
                         _ => format!("{} - Unknown Type", ci.ciname),
                     };
                     sender.send(result).unwrap();
@@ -165,4 +172,10 @@ fn ssh_status(ci: ConfigItem) -> String {
     let port: u16 = ci.cidata.get(1).and_then(|p| p.parse().ok()).unwrap_or(22);
     let status = ssh_server_up(&ci.cidata[0], port);
     return format!("{} - SSH Server\n        SSH Server Up: {}", ci.ciname, status);
+}
+
+//DNS Server Status
+fn dns_status(ci: ConfigItem) -> String {
+    let status = dns_server_up(&ci.cidata[0], "google.com");
+    return format!("{} - DNS Server\n        DNS Server Up: {}", ci.ciname, status);
 }
