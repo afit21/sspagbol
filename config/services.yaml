@@ -11,6 +11,10 @@
       cidata:
         - "https://pihole.afih.net/admin/login"
         - "443"
+    - ciname: Pi Hole DNS Server
+      citype: DNSServer
+      cidata:
+        - "192.168.50.74"
 
 - name: Deluge
   desc: Torrent client

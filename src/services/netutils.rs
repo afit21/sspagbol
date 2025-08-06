@@ -4,6 +4,7 @@ use std::time::Duration;
 use url::Url;
 use std::net::{TcpStream};
 use std::io::{Read};
+use std::net::UdpSocket;
 
 //Attempts to ping a service. Returns true or false
 pub fn ping(target: &str) -> bool {
@@ -76,6 +77,66 @@ pub fn ssh_server_up(host: &str, port: u16) -> String {
             } else {
                 return "❌".to_string();
             }
+        }
+        _ => "❌".to_string(),
+    }
+}
+
+
+pub fn dns_server_up(host: &str, domain: &str) -> String {
+    let server = format!("{}:53", host); // DNS servers listen on port 53 UDP
+
+    // Create UDP socket bound to any local port
+    let socket = match UdpSocket::bind("0.0.0.0:0") {
+        Ok(s) => s,
+        Err(_) => return "❌".to_string(),
+    };
+
+    // Set timeout so we don't hang
+    if socket
+        .set_read_timeout(Some(Duration::from_secs(3)))
+        .is_err()
+    {
+        return "❌".to_string();
+    }
+
+    // Encode the domain into DNS label format
+    let mut qname = Vec::new();
+    for part in domain.split('.') {
+        if part.len() > 0x3F {
+            return "❌".to_string(); // label too long
+        }
+        qname.push(part.len() as u8);
+        qname.extend_from_slice(part.as_bytes());
+    }
+    qname.push(0); // null terminator for domain
+
+    // Build a minimal DNS query
+    let mut query = vec![
+        0x12, 0x34, // Transaction ID
+        0x01, 0x00, // Flags: standard query
+        0x00, 0x01, // Questions: 1
+        0x00, 0x00, // Answer RRs
+        0x00, 0x00, // Authority RRs
+        0x00, 0x00, // Additional RRs
+    ];
+    query.extend_from_slice(&qname);
+    query.extend_from_slice(&[0x00, 0x01]); // Type: A
+    query.extend_from_slice(&[0x00, 0x01]); // Class: IN
+
+    // Send query to DNS server
+    if socket.send_to(&query, &server).is_err() {
+        return "❌".to_string();
+    }
+
+    let mut buf = [0u8; 512];
+    match socket.recv_from(&mut buf) {
+        Ok((size, _)) if size > 0 => {
+            // Check if Transaction ID matches
+            if buf[0] == 0x12 && buf[1] == 0x34 {
+                return "✅".to_string();
+            }
+            "❌".to_string()
         }
         _ => "❌".to_string(),
     }
