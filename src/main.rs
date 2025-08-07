@@ -46,8 +46,8 @@ fn start_spinner(message: &str) -> (Arc<AtomicBool>, thread::JoinHandle<()>) {
 
 fn main() {
     print_splash();
-
-    let services = match load_services_from_yaml("config/services.yaml") {
+    let config_path = "/etc/sspagbol/services.yaml";
+    let services = match load_services_from_yaml(config_path) {
         Ok(srv) => srv,
         Err(e) => {
             eprintln!("Error loading services: {}", e);
