@@ -11,6 +11,7 @@
       cidata:
         - "https://google.com/"
         - "443"
+        - "true"  # Verify SSL
     - ciname: Google DNS Server
       citype: DNSServer
       cidata:

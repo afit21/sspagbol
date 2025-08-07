@@ -2,7 +2,7 @@ mod netutils;
 
 use ansi_term::Style;
 use serde::Deserialize;
-use netutils::{ping, web_server_up, ssh_server_up, dns_server_up};
+use netutils::{ping, web_server_up, ssh_server_up, dns_server_up, check_ssl_cert};
 use std::fs::File;
 use std::io::BufReader;
 use crossbeam_channel::unbounded;
@@ -20,6 +20,7 @@ pub struct ConfigItem {
     //Webserver
     //  [0] - URL
     //  [1] - Port
+    //  [3] - Verify SSL (optional)
     //SSH Server
     //  [0] - IP Address or Hostname
     //  [1] - Port
@@ -72,6 +73,7 @@ impl Service {
                     //SMB
                     //FTP
                     //SMTP
+                    //Check if various services are running via SSH & Systemctl
                     let result = match ci.citype.as_str() {
                         //Register Type Print Functions
                         "Hostmachine" => hostmachine_status(ci),
@@ -164,7 +166,15 @@ fn hostmachine_status(ci: ConfigItem) -> String {
 fn webserver_status(ci: ConfigItem) -> String {
     let port: u16 = ci.cidata.get(1).and_then(|p| p.parse().ok()).unwrap_or(80);
     let status = print_bool_result_emoji("Web Server Up", web_server_up(&ci.cidata[0], port));
-    return format!("{} - Web Server\n        {}", ci.ciname, status);
+
+    // Check if ci.cidata has a third element for SSL verification
+    let verify_ssl = ci.cidata.get(2).map_or(false, |v| v == "true" || v == "1");
+    if verify_ssl {
+        return format!("{} - Web Server\n        {}\n        SSL Certificate: {}", ci.ciname, status, check_ssl_cert(&ci.cidata[0], port));
+    } else {
+        return format!("{} - Web Server\n        {}", ci.ciname, status);
+    }
+    
 }
 
 //SSH Server Status

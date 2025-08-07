@@ -11,6 +11,9 @@ serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.9"
 crossbeam = "0.8"
 crossbeam-channel = "0.5"
+native-tls = "0.2"
+x509-parser = "0.15"
+chrono = "0.4"
 
 [package.metadata.deb]
 maintainer = "Afi Hogan <afihogan@gmail.com>"
@@ -18,5 +21,5 @@ depends = "libc6 (>= 2.27)"  # Update depending on your platform
 section = "utility"
 assets = [
   ["target/release/sspagbol", "usr/bin/", "755"],
-  ["config/services.yaml", "etc/sspagbol/services.yaml", "644"]
+  { source = "config/services.yaml", dest = "etc/sspagbol/services.yaml", mode = "644", conf = true }
 ]
