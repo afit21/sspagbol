@@ -1,0 +1,82 @@
+- name: PiHole
+  desc: DNS and ad-blocking service
+  cilist:
+    - ciname: SSH Connection
+      citype: SSHServer
+      cidata:
+        - "192.168.50.74"
+        - "22"
+    - ciname: PiHole Web GUI
+      citype: Webserver
+      cidata:
+        - "https://pihole.afih.net/admin/login"
+        - "443"
+    - ciname: Pi Hole DNS Server
+      citype: DNSServer
+      cidata:
+        - "192.168.50.74"
+
+- name: Deluge
+  desc: Torrent client
+  cilist:
+    - ciname: Deluge Web UI
+      citype: Webserver
+      cidata:
+        - "https://deluge.afih.net/"
+        - "443"
+
+- name: Home Assistant
+  desc: Home automation platform
+  cilist:
+    - ciname: Home Assistant Web UI
+      citype: Webserver
+      cidata:
+        - "https://homeassistant.afih.net/"
+        - "443"
+    - ciname: Home Assistant Hostmachine
+      citype: Hostmachine
+      cidata:
+        - "homeassistant.afih.net"
+
+- name: Radarr
+  desc: Movie management tool
+  cilist:
+    - ciname: Radarr Web UI
+      citype: Webserver
+      cidata:
+        - "https://radarr.afih.net/"
+        - "443"
+
+- name: Proxmox Cluster
+  desc: Hypervisor
+  cilist:
+    - ciname: Proxmox-Farquaad
+      citype: Webserver
+      cidata:
+        - "https://192.168.50.13/"
+        - "8006"
+    - ciname: Proxmox-Rumpel
+      citype: Webserver
+      cidata:
+        - "https://192.168.50.14/"
+        - "8006"
+    - ciname: Proxmox-Pinocchio
+      citype: Webserver
+      cidata:
+        - "https://192.168.50.15/"
+        - "8006"
+    - ciname: Proxmox-Humpty
+      citype: Webserver
+      cidata:
+        - "https://192.168.50.16/"
+        - "8006"
+    - ciname: Proxmox-Shrek
+      citype: Webserver
+      cidata:
+        - "https://192.168.50.12/"
+        - "8006"
+    - ciname: Proxmox-Backup
+      citype: Webserver
+      cidata:
+        - "https://192.168.50.10/"
+        - "8007"
